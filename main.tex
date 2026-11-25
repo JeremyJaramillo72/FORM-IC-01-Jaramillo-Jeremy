@@ -1,0 +1,106 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage[top=1.60cm,bottom=1.65cm,left=1.85cm,right=1.85cm]{geometry}
+\usepackage{newtxtext,newtxmath}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{xcolor}
+\usepackage{csquotes}
+\usepackage{titlesec}
+\usepackage{xurl}
+\usepackage[backend=biber,style=ieee,sorting=none]{biblatex}
+\usepackage[colorlinks=true,linkcolor=blue!60!black,citecolor=blue!60!black,urlcolor=blue!60!black]{hyperref}
+
+\addbibresource{referencias.bib}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.4pt}
+\titlespacing*{\section}{0pt}{4.6pt}{1.6pt}
+\titleformat{\section}{\normalsize\bfseries}{\thesection.}{0.45em}{}
+
+\begin{document}
+
+% =========================================================================
+% CARÁTULA (NO CUENTA EN EL LÍMITE DE 1 PÁGINA DEL ANÁLISIS)
+% =========================================================================
+\begin{titlepage}
+    \centering
+    \vspace*{1.0cm}
+    {\Large \textbf{UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO}}\\[0.25cm]
+    {\large Facultad de Ciencias de la Computación}\\[0.15cm]
+    {\large Carrera de Ingeniería en Software}\\[1.6cm]
+
+    \rule{\linewidth}{0.5mm}\\[0.35cm]
+    {\large \textbf{INVESTIGACIÓN INDIVIDUAL — UNIDAD 2 (FORM-IC-01)}}\\[0.30cm]
+    {\LARGE \textbf{Patrón API Gateway en Producción: Evolución de la Arquitectura de Borde de Netflix mediante Zuul y Zuul~2}}\\[0.30cm]
+    \rule{\linewidth}{0.5mm}\\[1.6cm]
+
+    \begin{flushleft}
+        \large
+        \textbf{Estudiante:} Luis Jeremy Jaramillo Acosta (\texttt{@JeremyJaramillo72})\\[0.28cm]
+        \textbf{Asignatura:} Aplicaciones Distribuidas (\texttt{ISR-701})\\[0.28cm]
+        \textbf{Nivel y paralelo:} Séptimo nivel — Paralelo ``A''\\[0.28cm]
+        \textbf{Docente:} Gleiston Cicerón Guerrero Ulloa, PhD\\[0.28cm]
+        \textbf{Estilo / patrón analizado:} API Gateway (arquitectura de borde en microservicios)\\[0.28cm]
+        \textbf{Caso industrial registrado:} Netflix (\emph{Zuul~1} y \emph{Zuul~2})\\[0.28cm]
+        \textbf{Fecha:} 25 de noviembre de 2026\\[0.35cm]
+        \textbf{Repositorio público:}\\
+        {\normalsize \url{https://github.com/JeremyJaramillo72/FORM-IC-01-Jaramillo-Jeremy}}
+    \end{flushleft}
+
+    \vfill
+    {\normalsize Quevedo — Los Ríos — Ecuador\\[0.12cm]
+    Período Académico SPA 2026--2027}
+\end{titlepage}
+
+% =========================================================================
+% ANÁLISIS DE EXACTAMENTE 1 PÁGINA (SIN CONTAR CARÁTULA NI REFERENCIAS)
+% =========================================================================
+\setcounter{page}{1}
+
+\begin{center}
+    {\large \textbf{Evolución de Zuul y Zuul~2 como API Gateway en la Arquitectura de Borde de Netflix}}\\[0.06cm]
+    {\footnotesize Luis Jeremy Jaramillo Acosta · Aplicaciones Distribuidas (\texttt{ISR-701}) · Patrón: \textbf{API Gateway}}
+\end{center}
+\vspace{-0.18cm}
+\rule{\linewidth}{0.35pt}
+\vspace{-0.12cm}
+
+\section{Descripción del caso y escala operativa}
+Netflix opera su servicio global de vídeo bajo demanda sobre una arquitectura de microservicios en Amazon Web Services (AWS), donde televisores inteligentes, consolas, teléfonos y navegadores web ingresan por una única puerta de enlace de borde (\emph{API Gateway}): \textbf{Zuul}~\cite{cohen2013zuul,gonigberg2016zuul2}. En vez de permitir que los dispositivos hablen directo con los servicios internos, Zuul intercepta cada llamada externa, aplica controles de seguridad, clasifica el dispositivo emisor y dirige la carga al clúster de destino. Según las cifras publicadas por el equipo de \emph{Cloud Gateway} al liberar la segunda versión, Netflix mantiene en producción \textbf{más de 80 clústeres de Zuul~2} que despachan \textbf{más de un millón de peticiones por segundo} hacia \textbf{alrededor de 100 clústeres de \emph{backend}}~\cite{netflix2018opensourcing}, sosteniendo en simultáneo millones de sesiones activas en todo el mundo~\cite{gonigberg2016zuul2}.
+
+\section{Motivación arquitectónica y qué tenía la empresa antes}
+Antes de crear Zuul en 2013, distintos equipos exponían sus propios puntos de entrada detrás de balanceadores clásicos AWS ELB con reglas estáticas. Ese esquema obligaba a repetir validaciones de autenticación, cuotas y telemetría en varias aplicaciones y volvía lento reaccionar ante picos de tráfico o fallos propios de un modelo de televisor o consola~\cite{cohen2013zuul,haindl2024security}. Netflix adoptó el patrón \emph{API Gateway} con \textbf{Zuul~1} para reunir esas tareas transversales en una tubería de filtros dinámicos sobre la JVM (\texttt{pre}, \texttt{route}, \texttt{post} y \texttt{error}), escritos en Groovy y cargados en caliente sin reiniciar servidores~\cite{cohen2013zuul}. Sin embargo, Zuul~1 corría sobre \texttt{HttpServlet} (Tomcat) con el modelo bloqueante de \textbf{un hilo por petición}. Al requerir millones de conexiones persistentes para enviar avisos instantáneos (\emph{push}) sin sondeo periódico (\emph{polling}), reservar un hilo del sistema operativo por cada cliente ocioso o retenido resultó inviable, motivando en 2016 el rediseño hacia \textbf{Zuul~2} con bucles de eventos (\emph{event loops}) asíncronos y no bloqueantes sobre \textbf{Netty}~\cite{gonigberg2016zuul2,dhawan2026gateway}.
+
+\section{Beneficios obtenidos y métricas reportadas}
+Con Zuul~1, Netflix ganó control operativo inmediato en el borde: pudo lanzar versiones canarias desviando fracciones pequeñas de tráfico, inyectar pruebas de estrés controladas, redirigir regiones completas de AWS durante fallos mayores (proyecto \emph{Isthmus}) y aislar en vivo peticiones de clientes con fallos hacia clústeres de depuración mediante \texttt{SurgicalDebugFilter}~\cite{cohen2013zuul}. Tras migrar a Zuul~2 sobre Netty, las mediciones internas arrojaron resultados con matices importantes. En los clústeres dominados por entrada/salida de red y enrutamiento ligero, el cambio produjo cerca de un \textbf{25\,\% de incremento en rendimiento (\emph{throughput})} junto con una \textbf{reducción aproximada del 25\,\% en utilización de CPU}~\cite{gonigberg2016zuul2}. En cambio, en los clústeres principales con filtros intensivos en cómputo no hubo ahorro neto significativo de procesador, demostrando que el modelo asíncrono no acelera tareas ligadas a CPU~\cite{gonigberg2016zuul2,santos2025catalog}. La ganancia decisiva estuvo en el escalamiento de conexiones: al desvincular las conexiones TCP de los hilos de ejecución, cayó drásticamente la huella de memoria por socket abierto y Netflix pudo sostener millones de enlaces persistentes bidireccionales sobre HTTP/2 y WebSockets~\cite{gonigberg2016zuul2,dhawan2026gateway}.
+
+\section{Desafíos encontrados y soluciones aplicadas}
+En Zuul~1, cualquier aumento de latencia en un microservicio aguas abajo retenía los hilos bloqueados en Tomcat hasta vaciar las piscinas disponibles y provocar caídas en cascada; Netflix mitigó primero ese riesgo aplicando disyuntores (\emph{circuit breakers}) y compartimentos estancos (\emph{bulkheads}) con Hystrix, y lo corrigió de raíz al pasar al modelo de un \texttt{EventLoop} por núcleo de CPU en Zuul~2 (con filtros \texttt{Inbound}, \texttt{Endpoint} y \texttt{Outbound})~\cite{gonigberg2016zuul2,netflix2018opensourcing}. No obstante, operar sin bloqueo trajo problemas severos de ingeniería. Como varias solicitudes comparten el mismo hilo a destiempo, las variables \texttt{ThreadLocal} dejaron de funcionar y mezclarían datos entre clientes; las trazas de pila (\emph{stack traces}) perdieron continuidad lineal; una sola llamada bloqueante accidental dentro de un filtro congelaba decenas de miles de conexiones del bucle; y el manejo manual de memoria directa en Netty (\texttt{ByteBuf}) introdujo fugas difíciles de rastrear. Netflix lo resolvió prohibiendo \texttt{ThreadLocal} a favor de un objeto explícito \texttt{SessionContext} pasado en cada etapa, creando la herramienta interna \texttt{Passport} para registrar con marcas temporales cada transición del ciclo de vida de una petición, e integrando detectores estrictos de bloqueos de bucle y auditoría de conteo de referencias de \texttt{ByteBuf} antes de desplegar a escala global~\cite{gonigberg2016zuul2}.
+
+\section{Aplicación al proyecto propio (PFC: Bolsa de Empleos para Graduados UTEQ)}
+Nuestro PFC organiza la \emph{Bolsa de Empleos UTEQ} en cinco microservicios con persistencia independiente (\texttt{Perfiles}, \texttt{Ofertas y Validación}, \texttt{Postulaciones}, \texttt{Ingesta Externa} y \texttt{Notificaciones}). \textbf{Qué tomaría:} la decisión central de interponer un \emph{API Gateway} único que verifique tokens JWT según el rol (graduado, empresa o coordinación), aplique límites de tasa (\emph{rate limiting}) frente a ráfagas en convocatorias, fije plazos máximos (\emph{timeouts} de 2\,s) y traduzca las peticiones web REST/JSON hacia nuestros contratos internos en gRPC/Protobuf (\texttt{PerfilService} en el puerto \texttt{50051}), evitando duplicar seguridad y validaciones en los cinco servicios~\cite{haindl2024security,blinowski2022monolithic}. \textbf{Qué descartaría:} no adoptaría un motor no bloqueante propio sobre Netty con compilación dinámica de filtros ni mantendría millones de conexiones persistentes en el borde~\cite{gonigberg2016zuul2,dhawan2026gateway}. Para unos pocos miles de graduados de la UTEQ y un equipo de cuatro integrantes, perder trazas lineales y depurar bucles de eventos introduciría una carga operativa injustificada~\cite{blinowski2022monolithic}; un \emph{gateway} declarativo estándar cubre holgadamente nuestra demanda, dejando los avisos laborales en manos de colas asíncronas AMQP.
+
+% =========================================================================
+% REFERENCIAS Y EVIDENCIAS DE AUTORÍA (FUERA DE LA PÁGINA DE ANÁLISIS)
+% =========================================================================
+\newpage
+
+\printbibliography[title={Referencias Bibliográficas}]
+
+\vspace{0.25cm}
+\rule{\linewidth}{0.35pt}
+
+\section*{Evidencias de Autoría}
+
+\subsection*{1. Sistema conocido de primera mano donde se reconoce el patrón API Gateway}
+Un sistema que utilizo a diario entre Quevedo y Valencia donde reconozco de primera mano el patrón \emph{API Gateway} es la aplicación de \textbf{Banca Móvil de Banco Pichincha junto con la billetera Deuna}. Desde la experiencia directa de uso, un mismo cliente móvil resuelve operaciones que por detrás pertenecen a dominios bancarios muy distintos: consulta de saldos de ahorro, transferencias interbancarias, recargas, lectura de códigos QR comerciales e historial de movimientos. Sin embargo, la aplicación no abre sesiones independientes ni pide credenciales separadas para cada módulo; toda interacción pasa primero por una fachada HTTPS única que valida el token temporal de sesión (tras el ingreso biométrico), controla el número de peticiones seguidas —bloqueando temporalmente la consulta si se refresca repetidas veces en pocos segundos— y encamina la operación al servicio interno correspondiente~\cite{haindl2024security,santos2025catalog}. El papel del \emph{gateway} como punto de aislamiento también se nota en días de quincena o fin de mes: en varias ocasiones el pago inmediato con QR de Deuna o la descarga de movimientos devuelve un aviso controlado de servicio temporalmente no disponible (\emph{fallback} con corte rápido de espera), mientras el inicio de sesión y la visualización del saldo principal continúan respondiendo con normalidad, señal clara de enrutamiento desacoplado y manejo centralizado de fallos en el borde.
+
+\subsection*{2. Declaración de uso de inteligencia artificial}
+En cumplimiento de las normas de integridad académica de la asignatura, declaro que durante la preparación de esta actividad formativa utilicé la herramienta \textbf{Google Gemini} (versión noviembre de 2026) únicamente como apoyo de maquetación y revisión formal. Su empleo se limitó a: (a) ajustar la plantilla en \LaTeX{} y los márgenes/espaciados para cuadrar el cuerpo del análisis en una sola página sin alterar la estructura exigida, (b) configurar \texttt{biblatex} con \texttt{biber} en estilo IEEE, y (c) revisar ortografía, tildes y puntuación sobre mi borrador. La lectura y subrayado del blog técnico oficial de Netflix, la comprobación manual de cada enlace DOI frente a su publicación original (autores, año, título, revista, volumen y páginas), la relación con mi uso cotidiano de Banca Móvil/Deuna y la valoración arquitectónica frente al PFC \emph{Bolsa de Empleos UTEQ} fueron realizadas y verificadas directamente por mí.
+
+\end{document}
