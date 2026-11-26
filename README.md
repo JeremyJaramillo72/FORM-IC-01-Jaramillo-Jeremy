@@ -23,7 +23,7 @@ FORM-IC-01-Jaramillo-Jeremy/
 ├── referencias.bib                # Bibliografía IEEE (fuentes oficiales de Netflix + 4 artículos 2022-2026 con DOI verificado)
 ├── main.pdf                       # Documento compilado completo en formato PDF
 ├── img/
-│   └── captura_fuente_zuul.png    # Captura subrayada y anotada de la fuente principal del caso (Netflix TechBlog)
+│   └── captura_fuente_zuul.jpg    # Captura subrayada de la fuente principal del caso (Netflix TechBlog)
 └── README.md                      # Instrucciones de compilación, orden de comandos y dependencias
 ```
 

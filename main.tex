@@ -7,6 +7,7 @@
 \usepackage{newtxtext,newtxmath}
 \usepackage{microtype}
 \usepackage{graphicx}
+\graphicspath{{img/}{./}}
 \usepackage{booktabs}
 \usepackage{xcolor}
 \usepackage{csquotes}
@@ -28,6 +29,7 @@
 % CARÁTULA (NO CUENTA EN EL LÍMITE DE 1 PÁGINA DEL ANÁLISIS)
 % =========================================================================
 \begin{titlepage}
+    \pagenumbering{gobble}
     \centering
     \vspace*{1.0cm}
     {\Large \textbf{UNIVERSIDAD TÉCNICA ESTATAL DE QUEVEDO}}\\[0.25cm]
@@ -47,7 +49,7 @@
         \textbf{Docente:} Gleiston Cicerón Guerrero Ulloa, PhD\\[0.28cm]
         \textbf{Estilo / patrón analizado:} API Gateway (arquitectura de borde en microservicios)\\[0.28cm]
         \textbf{Caso industrial registrado:} Netflix (\emph{Zuul~1} y \emph{Zuul~2})\\[0.28cm]
-        \textbf{Fecha:} 25 de noviembre de 2026\\[0.35cm]
+        \textbf{Fecha:} 26 de noviembre de 2026\\[0.35cm]
         \textbf{Repositorio público:}\\
         {\normalsize \url{https://github.com/JeremyJaramillo72/FORM-IC-01-Jaramillo-Jeremy}}
     \end{flushleft}
@@ -60,7 +62,7 @@
 % =========================================================================
 % ANÁLISIS DE EXACTAMENTE 1 PÁGINA (SIN CONTAR CARÁTULA NI REFERENCIAS)
 % =========================================================================
-\setcounter{page}{1}
+\pagenumbering{arabic}
 
 \begin{center}
     {\large \textbf{Evolución de Zuul y Zuul~2 como API Gateway en la Arquitectura de Borde de Netflix}}\\[0.06cm]
@@ -102,5 +104,16 @@ Un sistema que utilizo a diario entre Quevedo y Valencia donde reconozco de prim
 
 \subsection*{2. Declaración de uso de inteligencia artificial}
 En cumplimiento de las normas de integridad académica de la asignatura, declaro que durante la preparación de esta actividad formativa utilicé la herramienta \textbf{Google Gemini} (versión noviembre de 2026) únicamente como apoyo de maquetación y revisión formal. Su empleo se limitó a: (a) ajustar la plantilla en \LaTeX{} y los márgenes/espaciados para cuadrar el cuerpo del análisis en una sola página sin alterar la estructura exigida, (b) configurar \texttt{biblatex} con \texttt{biber} en estilo IEEE, y (c) revisar ortografía, tildes y puntuación sobre mi borrador. La lectura y subrayado del blog técnico oficial de Netflix, la comprobación manual de cada enlace DOI frente a su publicación original (autores, año, título, revista, volumen y páginas), la relación con mi uso cotidiano de Banca Móvil/Deuna y la valoración arquitectónica frente al PFC \emph{Bolsa de Empleos UTEQ} fueron realizadas y verificadas directamente por mí.
+
+\newpage
+\subsection*{3. Captura de la fuente principal del caso con fragmento subrayado}
+La Figura~\ref{fig:captura_fuente} recoge la captura de lectura directa tomada sobre el blog técnico oficial de Netflix~\cite{gonigberg2016zuul2}, donde resalté la diferencia arquitectónica central entre Zuul~1 y Zuul~2 —la ejecución sobre un marco asíncrono y no bloqueante basado en Netty— junto al párrafo que expone su propósito principal en producción: sostener conexiones persistentes desde navegadores y dispositivos conectados para más de 83 millones de suscriptores globales.
+
+\begin{figure}[!htbp]
+    \centering
+    \includegraphics[width=0.96\textwidth]{captura_fuente_zuul.jpg}
+    \caption{Captura con fragmento resaltado sobre la fuente principal del caso (\emph{Zuul~2: The Netflix Journey to Asynchronous, Non-Blocking Systems}, Netflix Technology Blog)~\cite{gonigberg2016zuul2}.}
+    \label{fig:captura_fuente}
+\end{figure}
 
 \end{document}
